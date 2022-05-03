@@ -55,7 +55,7 @@ async def info(ctx):
     embed.add_field(name='Statistik', value=f"{str(len(client.guilds))} Server!", inline=True)
     embed.add_field(name='Invite me!', value="[HamsyPy](https://discord.com/api/oauth2/authorize?client_id=965125053337444402&permissions=8&scope=bot)", inline=True)
     embed.add_field(name='Dokumentasi', value="[gitbook](https://gitbook.com)", inline=True)
-    embed.add_field(name='Source Code', value="[github](https://github.com/HamsterKaget)", inline=False)
+    embed.add_field(name='Source Code', value="[github](https://github.com/HamsterKaget)", inline=True)
     embed.add_field(name='Support Us', value='[Donasi](https://trakteer.id/HamsterKaget)', inline=True)
     embed.add_field(name='Server Support', value='[HamsterArea](https://dsc.gg/HamsterArea)', inline=True)
     embed.set_thumbnail(url=icon)
@@ -86,7 +86,7 @@ async def serverinfo(ctx):
     server_name = f'{ctx.guild.name}'
     server_id = f'{ctx.guild.id}'
     server_icon = f'{ctx.guild.icon_url}'
-    server_owner = f'<@ {ctx.guild.owner_id}>'
+    server_owner = f'<@{ctx.guild.owner_id}>'
     server_category = f'{len(ctx.guild.categories)}'
     server_text = f'{len(ctx.guild.text_channels)}'
     server_voice = f'{len(ctx.guild.voice_channels)}'
@@ -122,6 +122,66 @@ async def serverinvite(ctx):
 async def serverinvite_error(ctx, error):
     if isinstance(error, commands.MissingPermissions):
         await ctx.reply('**Maaf , Anda tidak mempunyai permission yang tepat untuk melakukan perintah ini**')
+
+@client.command(name='purge')
+@commands.has_permissions(manage_messages=True)
+async def purge(ctx, amount, month=None, day=None, year=None):
+    if amount == '-':
+        amount = None
+    if amount == 'all':
+        amount = 101
+    else :
+        amount = int(amount) + 1
+
+    if month == None or day == None or year == None:
+        date = None
+    else :
+        date = datetime.datetime(int(year), int(month), int(day))
+
+    await ctx.channel.purge(limit=amount, after=date)
+    await ctx.channel.send('**Berhasil Menghapus Pesan**')
+
+@purge.error
+async def purgeerror(ctx, error):
+    if isinstance(error, commands.MissingPermissions):
+        await ctx.reply(f'**Maaf , Anda tidak mempunyai permission yang tepat untuk melakukan perintah ini**')
+
+@client.command(name='kick')
+@commands.has_guild_permissions(kick_members=True)
+async def kick(ctx, member: discord.Member, *,reason=None):
+    await member.kick(reason=reason)
+    await ctx.send(f'**{member} telah ditendang keluar server !**')
+
+@kick.error
+async def kickerror(ctx, error):
+    if isinstance(error, commands.MissingPermissions):
+        await ctx.send(f'**Maaf , Anda tidak mempunyai permission yang tepat untuk melakukan perintah ini**')
+
+@client.command(name='ban')
+@commands.has_guild_permissions(ban_members=True)
+async def ban(ctx, member: discord.Member, *,reason=None):
+    await member.ban(reason=reason)
+    await ctx.send(f'{member} telah dibanned dari server!')
+
+@ban.error
+async def banerror(ctx, error):
+    if isinstance(error, commands.MissingPermissions):
+        await ctx.send(f'**Maaf , Anda tidak mempunyai permission yang tepat untuk melakukan perintah ini**')
+
+@client.command(name='unban')
+@commands.has_guild_permissions(ban_members=True)
+async def unban(ctx, *, member) :
+    banned_members = await ctx.guild.bans()
+    for person in banned_members:
+        user = person.user
+        if member == str(user):
+            await ctx.guild.unban(user)
+            await ctx.send(f"**{person.user} telah di perbolehkan masuk kembali ke dalam server !**")
+
+@unban.error
+async def unbanerror(ctx, error):
+    if isinstance(error, commands.MissingPermissions):
+        await ctx.send(f'**Maaf , Anda tidak mempunyai permission yang tepat untuk melakukan perintah ini**')
 
 # Mengambil bot token dari file .env kemudian jalankan bot dengan token tersebut
 client.run(os.getenv("TOKEN"))
