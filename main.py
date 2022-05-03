@@ -49,7 +49,7 @@ async def info(ctx):
         color = discord.Color.random(),
     )
     embed.set_footer(
-        text='dibuat dengan 💖 oleh HamsterKaget | Pre-Alpha v.0.22.5.1',
+        text='dibuat dengan 💖 oleh HamsterKaget | v.0.22.5.4-alpha ',
         icon_url=icon
     )
     embed.add_field(name='Statistik', value=f"{str(len(client.guilds))} Server!", inline=True)
