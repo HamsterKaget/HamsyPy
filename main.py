@@ -3,6 +3,8 @@ import discord
 import datetime
 from dotenv import load_dotenv
 from discord.ext import commands
+import json
+import asyncio
 
 # panggil file .env untuk mengambil bot token
 load_dotenv()
@@ -183,5 +185,47 @@ async def unbanerror(ctx, error):
     if isinstance(error, commands.MissingPermissions):
         await ctx.send(f'**Maaf , Anda tidak mempunyai permission yang tepat untuk melakukan perintah ini**')
 
+# Command Request API
+def get_quote(ctx):
+    # Request API
+    response = requests.get("https://zenquotes.io/api/random")
+    json_data = json.loads(response.text)
+    quote = json_data[0]['q'] + ' -' + json_data[0]['a']
+    return quote
+
+@client.command()
+async def quote(ctx):
+    isi = get_quote(ctx)
+    await ctx.channel.send(isi)
+
+@client.command(name='lock')
+@commands.has_guild_permissions(manage_channels=True)
+async def lock(ctx, channel : discord.TextChannel=None):
+    channel = channel or ctx.channel
+    overwrite = channel.overwrites_for(ctx.guild.default_role)
+    overwrite.send_messages = False
+    await channel.set_permissions(ctx.guild.default_role, overwrite=overwrite)
+    await ctx.send(f'**Channel Telah di kunci oleh {ctx.author}**')
+
+@lock.error
+async def lockerror(ctx, error):
+    if isinstance(error, commands.MissingPermissions):
+        await ctx.send(f'**Maaf , Anda tidak mempunyai permission yang tepat untuk melakukan perintah ini**')
+
+@client.command(name='unlock')
+@commands.has_guild_permissions(manage_channels=True)
+async def unlock(ctx, channel: discord.TextChannel=None):
+    channel = channel or ctx.channel
+    overwrite = channel.overwrites_for(ctx.guild.default_role)
+    overwrite.send_messages = True
+    await channel.set_permissions(ctx.guild.default_role, overwrite=overwrite)
+    await ctx.send(f'**Channel telah dibuka oleh {ctx.author}**')
+
+@unlock.error
+async def unlockerror(ctx, error):
+    if isinstance(error, commands.MissingPermissions):
+        await ctx.send(f'**Maaf , Anda tidak mempunyai permission yang tepat untuk melakukan perintah ini**')
+
 # Mengambil bot token dari file .env kemudian jalankan bot dengan token tersebut
 client.run(os.getenv("TOKEN"))
+
